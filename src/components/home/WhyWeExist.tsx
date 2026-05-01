@@ -7,33 +7,33 @@ import Link from "next/link";
 export default function WhyWeExist() {
   const features = [
     {
-      icon: <Heart className="w-8 h-8 text-white" />,
+      icon: <Heart className="w-8 h-8 text-primary" />,
       title: "Compassionate Care",
       description: "We believe every senior deserves dignified, compassionate, and attentive care tailored to their unique needs and personal history.",
       colSpan: "sm:col-span-2",
-      bgClass: "bg-white/10 backdrop-blur-md border-white/20 hover:bg-white/15"
+      bgClass: "bg-white border-gray-100 shadow-lg hover:shadow-xl hover:-translate-y-1"
     },
     {
-      icon: <Shield className="w-7 h-7 text-white" />,
+      icon: <Shield className="w-7 h-7 text-primary" />,
       title: "Uncompromising Security",
       description: "Our solutions are built on trust.",
       colSpan: "col-span-1",
-      bgClass: "bg-white/10 backdrop-blur-md border-white/20 hover:bg-white/15"
+      bgClass: "bg-white border-gray-100 shadow-lg hover:shadow-xl hover:-translate-y-1"
     },
     {
-      icon: <Clock className="w-7 h-7 text-white" />,
+      icon: <Clock className="w-7 h-7 text-primary" />,
       title: "Always Accessible",
       description: "24/7 support when you need it.",
       colSpan: "col-span-1",
-      bgClass: "bg-white/10 backdrop-blur-md border-white/20 hover:bg-white/15"
+      bgClass: "bg-white border-gray-100 shadow-lg hover:shadow-xl hover:-translate-y-1"
     }
   ];
 
   return (
-    <section id="why-us" className="py-24 bg-primary text-white relative overflow-hidden">
+    <section id="why-we-exist" className="py-24 bg-gray-50 text-gray-900 relative overflow-hidden">
       {/* Decorative Background */}
-      <div className="absolute top-0 left-0 w-[400px] md:w-[600px] h-[400px] md:h-[600px] bg-white/5 rounded-full blur-3xl -translate-y-1/2 -translate-x-1/4 pointer-events-none" />
-      <div className="absolute bottom-0 right-0 w-[300px] md:w-[500px] h-[300px] md:h-[500px] bg-blue-400/10 rounded-full blur-3xl translate-y-1/3 translate-x-1/4 pointer-events-none" />
+      <div className="absolute top-0 left-0 w-[400px] md:w-[600px] h-[400px] md:h-[600px] bg-primary/5 rounded-full blur-3xl -translate-y-1/2 -translate-x-1/4 pointer-events-none" />
+      <div className="absolute bottom-0 right-0 w-[300px] md:w-[500px] h-[300px] md:h-[500px] bg-accent/5 rounded-full blur-3xl translate-y-1/3 translate-x-1/4 pointer-events-none" />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         
@@ -47,19 +47,19 @@ export default function WhyWeExist() {
               viewport={{ once: true }}
               transition={{ duration: 0.6 }}
             >
-              <h2 className="text-sm font-bold text-blue-200 tracking-widest uppercase mb-3">
+              <h2 className="text-sm font-bold text-primary tracking-widest uppercase mb-3">
                 Why We Exist
               </h2>
-              <h3 className="text-4xl md:text-5xl font-extrabold text-white mb-6 tracking-tight leading-tight">
-                Redefining the <br/> aging experience.
+              <h3 className="text-4xl md:text-5xl font-extrabold text-gray-900 mb-6 tracking-tight leading-tight">
+                Empowering the <br/> Golden Years.
               </h3>
-              <p className="text-lg text-blue-100 leading-relaxed mb-8">
-                The narrative of aging is changing. It's no longer about slowing down; it's about moving forward with confidence. MediLife technology disappears into the background, silent until you need it, ensuring that "alone" never means "isolated."
+              <p className="text-lg text-gray-600 leading-relaxed mb-8">
+                The narrative of aging is changing. It's no longer about slowing down; it's about moving forward with confidence. vCareAlert technology disappears into the background, silent until you need it, ensuring that "alone" never means "isolated."
               </p>
               
               <Link 
-                href="#services" 
-                className="inline-flex items-center gap-2 text-white font-semibold hover:text-blue-200 transition-colors group"
+                href="#products" 
+                className="inline-flex items-center gap-2 text-primary font-semibold hover:text-blue-800 transition-colors group"
               >
                 See how we help
                 <ArrowRight className="w-5 h-5 transform group-hover:translate-x-1 transition-transform" />
@@ -79,11 +79,11 @@ export default function WhyWeExist() {
                   transition={{ duration: 0.5, delay: index * 0.15 }}
                   className={`${feature.colSpan} ${feature.bgClass} p-8 md:p-10 rounded-[2rem] shadow-sm border transition-all group`}
                 >
-                  <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center mb-6 shadow-sm border border-white/10 group-hover:scale-110 transition-transform duration-300">
+                  <div className="w-16 h-16 bg-gray-50 rounded-2xl flex items-center justify-center mb-6 border border-gray-100 group-hover:scale-110 transition-transform duration-300">
                     {feature.icon}
                   </div>
-                  <h4 className="text-2xl font-bold text-white mb-3">{feature.title}</h4>
-                  <p className="text-blue-100 leading-relaxed">{feature.description}</p>
+                  <h4 className="text-2xl font-bold text-gray-900 mb-3">{feature.title}</h4>
+                  <p className="text-gray-600 leading-relaxed">{feature.description}</p>
                 </motion.div>
               ))}
             </div>

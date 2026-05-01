@@ -7,15 +7,15 @@ import { ChevronDown } from "lucide-react";
 const faqs = [
   {
     question: "Are your medical alert systems difficult to install?",
-    answer: "Not at all. Our systems are designed for plug-and-play simplicity. Most units can be set up in under 5 minutes without any tools."
+    answer: "Not at all. Our systems are designed for plug-and-play simplicity. Most units can be set up in under 5 minutes without any tools. Simply plug the base station into an outlet and you're ready."
   },
   {
-    question: "Do you offer financing for walk-in bathtubs?",
-    answer: "Yes, we offer flexible financing options and work with various insurance providers to help minimize your out-of-pocket expenses."
+    question: "Do I have to sign a long-term contract?",
+    answer: "No. We believe in earning your trust every month. There are absolutely no long-term contracts or cancellation fees. You can cancel at any time."
   },
   {
-    question: "How secure is my personal and medical data?",
-    answer: "We use bank-level encryption and are fully HIPAA-compliant. Your privacy and data security are our top priorities."
+    question: "Does the mobile system work everywhere?",
+    answer: "Our mobile systems use nationwide cellular networks to provide coverage almost everywhere in the US. As long as there is cellular service, you are protected."
   },
   {
     question: "Can I get a quote without committing to a purchase?",

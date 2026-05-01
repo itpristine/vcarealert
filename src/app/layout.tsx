@@ -3,6 +3,8 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
+import CookieConsent from "@/components/ui/CookieConsent";
+import FloatingContact from "@/components/ui/FloatingContact";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -10,8 +12,13 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Aura Senior Healthcare | Trusted & Secure",
-  description: "Futuristic and reliable healthcare solutions for seniors. Get quotes for Medical Equipment, Reverse Mortgages, and more.",
+  title: "vCareAlert | Advanced Medical Alert Systems",
+  description: "Futuristic and reliable medical alert solutions for seniors. Get your free quote today.",
+  openGraph: {
+    title: "vCareAlert | Advanced Medical Alert Systems",
+    description: "Futuristic and reliable medical alert solutions for seniors.",
+    type: "website",
+  }
 };
 
 export default function RootLayout({
@@ -24,12 +31,19 @@ export default function RootLayout({
       lang="en"
       className={`${inter.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col selection:bg-primary selection:text-white">
+      <head>
+        {/* Placeholder for Google Analytics (GA4) */}
+        {/* <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script> */}
+        {/* Placeholder for Meta Pixel */}
+      </head>
+      <body className="min-h-full flex flex-col selection:bg-primary selection:text-white bg-background text-foreground">
         <Navbar />
         <main className="flex-grow flex flex-col">
           {children}
         </main>
         <Footer />
+        <FloatingContact />
+        <CookieConsent />
       </body>
     </html>
   );
