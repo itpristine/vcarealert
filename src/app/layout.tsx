@@ -14,6 +14,9 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: "vCareAlert | Advanced Medical Alert Systems",
   description: "Futuristic and reliable medical alert solutions for seniors. Get your free quote today.",
+  icons: {
+    icon: "/cropped_circle_image.png",
+  },
   openGraph: {
     title: "vCareAlert | Advanced Medical Alert Systems",
     description: "Futuristic and reliable medical alert solutions for seniors.",
