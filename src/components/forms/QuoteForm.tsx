@@ -342,20 +342,25 @@ export default function QuoteForm({ initialDevice = "" }: { initialDevice?: stri
                 Continue <ChevronRight className="w-4 h-4" />
               </button>
             ) : (
-              <button 
-                type="submit" 
-                disabled={isSubmitting}
-                className="flex items-center gap-2 px-8 py-3 bg-primary text-white font-medium rounded-xl hover:bg-blue-600 transition-all shadow-md shadow-primary/20 disabled:opacity-70 disabled:cursor-not-allowed"
-              >
-                {isSubmitting ? (
-                  <>
-                    <Loader2 className="w-5 h-5 animate-spin" />
-                    Submitting...
-                  </>
-                ) : (
-                  "Submit Request"
-                )}
-              </button>
+              <div className="flex flex-col items-end gap-2">
+                <button 
+                  type="submit" 
+                  disabled={isSubmitting}
+                  className="flex items-center gap-2 px-8 py-3 bg-primary text-white font-medium rounded-xl hover:bg-blue-600 transition-all shadow-md shadow-primary/20 disabled:opacity-70 disabled:cursor-not-allowed"
+                >
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                      Submitting...
+                    </>
+                  ) : (
+                    "Submit Request"
+                  )}
+                </button>
+                <p className="text-xs text-gray-500 text-right max-w-sm">
+                  By clicking the button above, you consent to be contacted by vcarealert and its affiliates via automated technology. Consent is not a condition of purchase.
+                </p>
+              </div>
             )}
           </div>
         )}
