@@ -12,16 +12,57 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "vCareAlert | Advanced Medical Alert Systems",
-  description: "Futuristic and reliable medical alert solutions for seniors. Get your free quote today.",
+  metadataBase: new URL("https://www.vcarealert.com"),
+  title: {
+    default: "vCareAlert | Medical Alert Systems for Seniors",
+    template: "%s | vCareAlert",
+  },
+  description:
+    "Award-winning medical alert systems for seniors. GPS tracking, fall detection, 24/7 monitoring. Get a free quote today. No long-term contracts.",
+  keywords: [
+    "medical alert system",
+    "medical alert systems for seniors",
+    "personal emergency response system",
+    "fall detection device",
+    "medical alert devices",
+    "senior safety",
+    "elderly monitoring",
+    "life alert alternative",
+    "GPS medical alert",
+    "home medical alert system",
+  ],
   icons: {
     icon: "/cropped_circle_image.png",
   },
   openGraph: {
-    title: "vCareAlert | Advanced Medical Alert Systems",
-    description: "Futuristic and reliable medical alert solutions for seniors.",
+    title: "vCareAlert | Medical Alert Systems for Seniors",
+    description:
+      "Award-winning medical alert systems with GPS tracking, fall detection & 24/7 monitoring. Free quote, no contracts.",
+    url: "https://www.vcarealert.com",
+    siteName: "vCareAlert",
     type: "website",
-  }
+    locale: "en_US",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "vCareAlert | Medical Alert Systems for Seniors",
+    description:
+      "Award-winning medical alert systems with GPS tracking, fall detection & 24/7 monitoring.",
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
+  alternates: {
+    canonical: "https://www.vcarealert.com",
+  },
 };
 
 export default function RootLayout({

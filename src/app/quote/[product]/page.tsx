@@ -49,7 +49,41 @@ const productData = {
   }
 };
 
-// We use an asynchronous generateStaticParams to allow static rendering if desired
+const productMeta: Record<string, { title: string; description: string }> = {
+  "home-system": {
+    title: "Home Medical Alert System - Free Quote",
+    description:
+      "Get a free quote for our home medical alert system. Cellular connection, 1000ft range, water-resistant pendant, 24/7 monitoring. No landline required.",
+  },
+  "mobile-system": {
+    title: "Mobile Medical Alert System - Free Quote",
+    description:
+      "Get a free quote for our GPS mobile medical alert system. Automatic fall detection, nationwide coverage, lightweight wearable design.",
+  },
+  smartwatch: {
+    title: "Medical Alert Smartwatch - Free Quote",
+    description:
+      "Get a free quote for our medical alert smartwatch. Modern design, one-touch emergency button, fitness tracking, 24/7 monitoring.",
+  },
+};
+
+export async function generateMetadata({
+  params,
+}: {
+  params: { product: string };
+}) {
+  const resolvedParams = await params;
+  const meta = productMeta[resolvedParams.product];
+  if (!meta) return {};
+  return {
+    title: meta.title,
+    description: meta.description,
+    alternates: {
+      canonical: `https://www.vcarealert.com/quote/${resolvedParams.product}`,
+    },
+  };
+}
+
 export async function generateStaticParams() {
   return [
     { product: 'home-system' },

@@ -1,6 +1,16 @@
 import QuoteForm from "@/components/forms/QuoteForm";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Get a Free Quote",
+  description:
+    "Get a free, no-obligation quote for a medical alert system. Choose from home systems, mobile devices, and smartwatches with 24/7 monitoring.",
+  alternates: {
+    canonical: "https://www.vcarealert.com/quote",
+  },
+};
 
 export default function GeneralQuotePage() {
   return (
