@@ -1,10 +1,23 @@
 import { google } from "googleapis";
 
+function getPrivateKey(): string {
+  const raw = process.env.GOOGLE_PRIVATE_KEY || "";
+  // Handle both JSON-escaped (\n as literal text) and actual newlines
+  if (raw.includes("\\n")) {
+    return raw.replace(/\\n/g, "\n");
+  }
+  // Handle double-quoted values from some env providers
+  if (raw.startsWith('"') && raw.endsWith('"')) {
+    return JSON.parse(raw);
+  }
+  return raw;
+}
+
 function getSheetsClient() {
   const auth = new google.auth.GoogleAuth({
     credentials: {
       client_email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
-      private_key: process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, "\n"),
+      private_key: getPrivateKey(),
     },
     scopes: ["https://www.googleapis.com/auth/spreadsheets"],
   });
