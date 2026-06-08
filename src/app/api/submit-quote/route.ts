@@ -2,6 +2,39 @@ import { NextResponse } from "next/server";
 import { sendEmail } from "@/lib/email";
 import { appendQuoteRow } from "@/lib/sheets";
 
+type RecaptchaVerificationResponse = {
+  success: boolean;
+  score?: number;
+  action?: string;
+  challenge_ts?: string;
+  hostname?: string;
+  "error-codes"?: string[];
+};
+
+async function verifyRecaptcha(token: string, remoteIp: string) {
+  const secret = process.env.RECAPTCHA_SECRET_KEY;
+  if (!secret) {
+    return { success: false, "error-codes": ["missing-input-secret"] } as RecaptchaVerificationResponse;
+  }
+
+  const params = new URLSearchParams({
+    secret,
+    response: token,
+  });
+
+  if (remoteIp && remoteIp !== "Unknown IP") {
+    params.append("remoteip", remoteIp);
+  }
+
+  const response = await fetch("https://www.google.com/recaptcha/api/siteverify", {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: params,
+  });
+
+  return (await response.json()) as RecaptchaVerificationResponse;
+}
+
 export async function POST(req: Request) {
   try {
     const data = await req.json();
@@ -9,11 +42,43 @@ export async function POST(req: Request) {
     const {
       firstName, lastName, age, gender, phoneNumber, emailAddress,
       streetAddress, city, state, zipCode,
-      device, mobilityIssues, searchingForDevice, heardAboutUs, comments, pageUrl
+      device, mobilityIssues, searchingForDevice, heardAboutUs, comments, pageUrl,
+      recaptchaToken
     } = data;
 
     const date = new Date().toLocaleString("en-US", { timeZone: "America/New_York" });
-    const remoteIp = req.headers.get("x-forwarded-for") || req.headers.get("remote-addr") || "Unknown IP";
+    const forwardedFor = req.headers.get("x-forwarded-for");
+    const remoteIp = forwardedFor?.split(",")[0]?.trim() || req.headers.get("remote-addr") || "Unknown IP";
+
+    const recaptchaSiteKey = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY;
+    const recaptchaSecret = process.env.RECAPTCHA_SECRET_KEY;
+    const recaptchaConfigured = Boolean(recaptchaSiteKey && recaptchaSecret);
+    const recaptchaMisconfigured = Boolean(recaptchaSiteKey || recaptchaSecret) && !recaptchaConfigured;
+
+    if (recaptchaMisconfigured) {
+      return NextResponse.json(
+        { success: false, error: "reCAPTCHA is not configured correctly." },
+        { status: 500 }
+      );
+    }
+
+    if (recaptchaConfigured) {
+      if (!recaptchaToken) {
+        return NextResponse.json(
+          { success: false, error: "Please complete the reCAPTCHA before submitting." },
+          { status: 400 }
+        );
+      }
+
+      const verification = await verifyRecaptcha(recaptchaToken, remoteIp);
+      if (!verification.success) {
+        console.error("reCAPTCHA verification failed:", verification["error-codes"]);
+        return NextResponse.json(
+          { success: false, error: "reCAPTCHA verification failed. Please try again." },
+          { status: 400 }
+        );
+      }
+    }
 
     // 1. Send Email Notification via Microsoft Graph API
     if (process.env.EMAIL_USER && process.env.AZURE_CLIENT_ID) {

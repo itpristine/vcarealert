@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useForm } from "react-hook-form";
+import { useEffect, useRef, useState } from "react";
+import { FieldPath, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Loader2, CheckCircle2, ChevronRight, ChevronLeft } from "lucide-react";
+import ReCAPTCHA from "react-google-recaptcha";
 
 export function createQuoteModalStore() {
   let isOpen = false;
@@ -55,12 +56,16 @@ const formSchema = z.object({
 
 type FormData = z.infer<typeof formSchema>;
 
+const recaptchaSiteKey = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY;
+
 export default function QuoteModal() {
   const [state, setState] = useState(quoteModalStore.getSnapshot());
   const [step, setStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
+  const [captchaToken, setCaptchaToken] = useState("");
+  const recaptchaRef = useRef<ReCAPTCHA | null>(null);
 
   const {
     register,
@@ -86,6 +91,7 @@ export default function QuoteModal() {
         setStep(1);
         setIsSuccess(false);
         setErrorMsg("");
+        setCaptchaToken("");
         if (snap.selectedService) {
           setValue("device", snap.selectedService);
         }
@@ -96,7 +102,7 @@ export default function QuoteModal() {
   }, [setValue, reset]);
 
   const handleNext = async () => {
-    let fieldsToValidate: any[] = [];
+    let fieldsToValidate: FieldPath<FormData>[] = [];
     if (step === 1) {
       fieldsToValidate = ["firstName", "lastName", "age", "gender", "phoneNumber", "emailAddress"];
     } else if (step === 2) {
@@ -113,7 +119,24 @@ export default function QuoteModal() {
     setStep((prev) => prev - 1);
   };
 
+  const handleCaptchaChange = (token: string | null) => {
+    setCaptchaToken(token ?? "");
+    if (token) {
+      setErrorMsg("");
+    }
+  };
+
+  const resetCaptcha = () => {
+    setCaptchaToken("");
+    recaptchaRef.current?.reset();
+  };
+
   const onSubmit = async (data: FormData) => {
+    if (recaptchaSiteKey && !captchaToken) {
+      setErrorMsg("Please complete the reCAPTCHA before submitting.");
+      return;
+    }
+
     setIsSubmitting(true);
     setErrorMsg("");
     try {
@@ -123,17 +146,21 @@ export default function QuoteModal() {
         body: JSON.stringify({
           ...data,
           pageUrl: window.location.href,
+          recaptchaToken: captchaToken,
         }),
       });
 
+      const result = await response.json().catch(() => null);
       if (!response.ok) {
-        throw new Error("Failed to submit form");
+        throw new Error(result?.error || "Failed to submit form");
       }
       setIsSuccess(true);
       setStep(4);
+      resetCaptcha();
     } catch (err) {
       console.error(err);
-      setErrorMsg("An error occurred. Please try again or call us directly.");
+      resetCaptcha();
+      setErrorMsg(err instanceof Error ? err.message : "An error occurred. Please try again or call us directly.");
     } finally {
       setIsSubmitting(false);
     }
@@ -351,6 +378,21 @@ export default function QuoteModal() {
                     <label className="block text-sm font-medium text-gray-700 mb-2">Additional Comments (Optional)</label>
                     <textarea {...register("comments")} rows={3} className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all resize-none"></textarea>
                   </div>
+
+                  <div className="space-y-3">
+                    <label className="block text-sm font-medium text-gray-700">Verification</label>
+                    {recaptchaSiteKey ? (
+                      <ReCAPTCHA
+                        ref={recaptchaRef}
+                        sitekey={recaptchaSiteKey}
+                        onChange={handleCaptchaChange}
+                        onExpired={() => setCaptchaToken("")}
+                        onErrored={() => setErrorMsg("reCAPTCHA failed to load. Please refresh and try again.")}
+                      />
+                    ) : (
+                      <p className="text-sm text-amber-600">reCAPTCHA is not configured for this environment.</p>
+                    )}
+                  </div>
                 </motion.div>
               )}
 
@@ -405,7 +447,7 @@ export default function QuoteModal() {
                 ) : (
                   <button 
                     type="submit" 
-                    disabled={isSubmitting}
+                    disabled={isSubmitting || (recaptchaSiteKey ? !captchaToken : false)}
                     className="flex items-center gap-2 px-8 py-3 bg-primary text-white font-medium rounded-xl hover:bg-blue-600 transition-all shadow-md shadow-primary/20 disabled:opacity-70 disabled:cursor-not-allowed"
                   >
                     {isSubmitting ? (
