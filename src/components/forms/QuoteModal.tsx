@@ -154,6 +154,13 @@ export default function QuoteModal() {
       if (!response.ok) {
         throw new Error(result?.error || "Failed to submit form");
       }
+      if (typeof window !== "undefined" && (window as any).gtag) {
+        (window as any).gtag('event', 'conversion', {
+          'send_to': 'AW-18175272091/BiMQCPCNiLAcEJvJ0tpD',
+          'value': 1.0,
+          'currency': 'INR'
+        });
+      }
       setIsSuccess(true);
       setStep(4);
       resetCaptcha();
