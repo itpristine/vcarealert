@@ -25,24 +25,24 @@ export default function PrivacyPolicyPage() {
   return (
     <div className="min-h-screen bg-gray-50/50">
       {/* Premium Hero Header */}
-      <div className="relative overflow-hidden bg-slate-955 text-white py-20 lg:py-24 border-b border-slate-900">
+      <div className="relative overflow-hidden bg-gradient-to-b from-sky-50/40 via-slate-50 to-white pt-32 pb-20 lg:pt-36 lg:pb-24 border-b border-slate-100">
         {/* Dynamic Blobs */}
-        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-primary/10 rounded-full blur-3xl translate-x-1/3 -translate-y-1/3 pointer-events-none" />
-        <div className="absolute bottom-0 left-0 w-[300px] h-[300px] bg-accent/10 rounded-full blur-3xl -translate-x-1/3 translate-y-1/3 pointer-events-none" />
+        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-primary/5 rounded-full blur-3xl translate-x-1/3 -translate-y-1/3 pointer-events-none" />
+        <div className="absolute bottom-0 left-0 w-[300px] h-[300px] bg-accent/5 rounded-full blur-3xl -translate-x-1/3 translate-y-1/3 pointer-events-none" />
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="max-w-3xl">
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary-foreground text-xs font-semibold mb-6">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-semibold mb-6">
               <Shield className="w-4 h-4 text-primary animate-pulse" />
               Privacy Shield Protection
             </div>
-            <h1 className="text-4xl sm:text-5xl font-extrabold tracking-tight mb-6 bg-gradient-to-r from-white via-slate-100 to-slate-300 bg-clip-text text-transparent">
+            <h1 className="text-4xl sm:text-5xl font-extrabold tracking-tight mb-6 text-slate-900">
               Privacy Policy
             </h1>
-            <p className="text-lg text-slate-300 leading-relaxed font-light">
+            <p className="text-lg text-slate-600 leading-relaxed font-light">
               At vCareAlert, we provide life-saving emergency monitoring systems. To deliver these essential services, we collect and process certain personal, location, and medical data. This policy outlines our legal commitments to securing your information.
             </p>
-            <p className="text-sm text-slate-500 mt-6 font-medium">
+            <p className="text-sm text-slate-400 mt-6 font-medium">
               Last updated: June 24, 2026
             </p>
           </div>
@@ -59,16 +59,16 @@ export default function PrivacyPolicyPage() {
               <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4 px-2">
                 Table of Contents
               </h2>
-              <nav className="space-y-1">
+              <nav className="space-y-1.5">
                 {SECTIONS.map((section) => {
                   const IconComponent = section.icon;
                   return (
                     <a
                       key={section.id}
                       href={`#${section.id}`}
-                      className="group flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-gray-600 hover:text-primary hover:bg-primary/5 transition-all"
+                      className="group flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-600 hover:text-primary hover:bg-primary/5 transition-all"
                     >
-                      <IconComponent className="w-4 h-4 text-gray-400 group-hover:text-primary transition-colors" />
+                      <IconComponent className="w-4 h-4 text-slate-400 group-hover:text-primary transition-colors" />
                       <span>{section.label}</span>
                     </a>
                   );
