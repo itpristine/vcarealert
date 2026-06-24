@@ -93,7 +93,7 @@ export default function PrivacyPolicyPage() {
                   </a>
                   <div className="flex items-center gap-2 text-xs text-slate-500">
                     <Mail className="w-3.5 h-3.5 text-slate-400" />
-                    privacy@vcarealert.com
+                    info@vcarealert.com
                   </div>
                 </div>
               </div>
@@ -293,7 +293,7 @@ export default function PrivacyPolicyPage() {
                 </a>
                 <div className="flex items-center gap-3 px-5 py-3 rounded-xl text-sm font-semibold text-slate-300">
                   <Mail className="w-4 h-4 text-primary" />
-                  privacy@vcarealert.com
+                  info@vcarealert.com
                 </div>
               </div>
             </div>
