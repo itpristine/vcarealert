@@ -113,7 +113,7 @@ export default function PrivacyPolicyPage() {
               </div>
               <div className="prose max-w-none text-gray-600 space-y-4 leading-relaxed">
                 <p>
-                  vCareAlert (“we”, “us”, or “our”) respects the privacy of our subscribers, users, and website visitors. This Privacy Policy describes how we collect, use, store, share, and protect your information when you subscribe to our medical alert services, use our mobile application, visit our website, or interact with our emergency response systems.
+                  vCareAlert we respects the privacy of our subscribers, users, and website visitors. This Privacy Policy describes how we collect, use, store, share, and protect your information when you subscribe to our medical alert services, use our mobile application, visit our website, or interact with our emergency response systems.
                 </p>
                 <p>
                   By accessing or using our services, you consent to the data collection and usage practices described in this policy. If you do not agree with these practices, please contact us immediately to cancel your services.
