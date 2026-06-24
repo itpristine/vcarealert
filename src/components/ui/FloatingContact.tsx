@@ -31,7 +31,7 @@ export default function FloatingContact() {
           className="fixed bottom-6 right-6 z-40"
         >
           <a 
-            href="tel:+18001234567" 
+            href="tel:+18664221401" 
             className="flex items-center justify-center w-14 h-14 bg-primary text-white rounded-full shadow-lg hover:bg-blue-600 transition-all hover:scale-110 shadow-primary/30"
             aria-label="Call Us Now"
           >

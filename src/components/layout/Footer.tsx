@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Phone } from "lucide-react";
 
 
 export default function Footer() {
@@ -15,9 +16,19 @@ export default function Footer() {
                 vCare<span className="text-primary">Alert</span>
               </span>
             </Link>
-            <p className="text-gray-500 max-w-sm leading-relaxed">
+            <p className="text-gray-500 max-w-sm leading-relaxed mb-6">
               Providing trusted, futuristic, and secure medical alert solutions for seniors across America. Your safety is our priority.
             </p>
+            <div className="flex flex-col gap-1.5">
+              <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Call Toll-Free 24/7</span>
+              <a 
+                href="tel:18664221401" 
+                className="text-lg font-bold text-gray-900 hover:text-primary transition-colors flex items-center gap-2 w-fit"
+              >
+                <Phone className="w-5 h-5 text-primary" />
+                1-866-422-1401
+              </a>
+            </div>
           </div>
           
           <div>
@@ -35,8 +46,7 @@ export default function Footer() {
               <li><Link href="/#why-us" className="text-sm text-gray-500 hover:text-primary transition-colors">Why Choose Us</Link></li>
               <li><Link href="/#how-it-works" className="text-sm text-gray-500 hover:text-primary transition-colors">How It Works</Link></li>
               <li><Link href="/#faqs" className="text-sm text-gray-500 hover:text-primary transition-colors">FAQs</Link></li>
-              <li><Link href="#" className="text-sm text-gray-500 hover:text-primary transition-colors">Privacy Policy</Link></li>
-              <li><Link href="#" className="text-sm text-gray-500 hover:text-primary transition-colors">Terms of Service</Link></li>
+              <li><Link href="/privacy" className="text-sm text-gray-500 hover:text-primary transition-colors">Privacy Policy</Link></li>
             </ul>
           </div>
         </div>
