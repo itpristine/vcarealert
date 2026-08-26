@@ -1,36 +1,4 @@
-async function getAccessToken(): Promise<string> {
-  const tenantId = process.env.AZURE_TENANT_ID;
-  const clientId = process.env.AZURE_CLIENT_ID;
-  const clientSecret = process.env.AZURE_CLIENT_SECRET;
-  const refreshToken = process.env.AZURE_REFRESH_TOKEN;
-
-  if (!tenantId || !clientId || !clientSecret || !refreshToken) {
-    throw new Error("Missing Azure OAuth2 environment variables");
-  }
-
-  const response = await fetch(
-    `https://login.microsoftonline.com/${tenantId}/oauth2/v2.0/token`,
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: new URLSearchParams({
-        client_id: clientId,
-        client_secret: clientSecret,
-        refresh_token: refreshToken,
-        grant_type: "refresh_token",
-        scope: "https://graph.microsoft.com/Mail.Send offline_access",
-      }).toString(),
-    }
-  );
-
-  const data = await response.json();
-
-  if (data.error) {
-    throw new Error(`OAuth2 token error: ${data.error_description || data.error}`);
-  }
-
-  return data.access_token;
-}
+import nodemailer from "nodemailer";
 
 interface SendMailOptions {
   to: string;
@@ -40,36 +8,52 @@ interface SendMailOptions {
 }
 
 export async function sendEmail({ to, subject, text, html }: SendMailOptions) {
-  const user = process.env.EMAIL_USER;
-  if (!user) throw new Error("EMAIL_USER is not configured");
+  const user = process.env.GMAIL_USER || process.env.EMAIL_USER;
+  const pass = process.env.GMAIL_APP_PASSWORD || process.env.EMAIL_PASS;
 
-  const accessToken = await getAccessToken();
+  const clientId = process.env.GMAIL_CLIENT_ID;
+  const clientSecret = process.env.GMAIL_CLIENT_SECRET;
+  const refreshToken = process.env.GMAIL_REFRESH_TOKEN;
 
-  const message: Record<string, unknown> = {
-    subject,
-    toRecipients: [{ emailAddress: { address: to } }],
-  };
-
-  if (html) {
-    message.body = { contentType: "HTML", content: html };
-  } else if (text) {
-    message.body = { contentType: "Text", content: text };
+  if (!user) {
+    throw new Error("GMAIL_USER (or EMAIL_USER) environment variable is not configured");
   }
 
-  const response = await fetch(
-    `https://graph.microsoft.com/v1.0/me/sendMail`,
-    {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-        "Content-Type": "application/json",
+  let transporter: nodemailer.Transporter;
+
+  if (clientId && clientSecret && refreshToken) {
+    // Google OAuth2 Authentication
+    transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        type: "OAuth2",
+        user,
+        clientId,
+        clientSecret,
+        refreshToken,
       },
-      body: JSON.stringify({ message, saveToSentItems: false }),
-    }
-  );
-
-  if (!response.ok) {
-    const errorBody = await response.text();
-    throw new Error(`Graph API sendMail failed (${response.status}): ${errorBody}`);
+    });
+  } else if (pass) {
+    // Gmail App Password / SMTP Authentication
+    transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user,
+        pass,
+      },
+    });
+  } else {
+    throw new Error(
+      "Missing Google authentication credentials. Please set GMAIL_APP_PASSWORD or Google OAuth2 variables (GMAIL_CLIENT_ID, GMAIL_CLIENT_SECRET, GMAIL_REFRESH_TOKEN) in your environment."
+    );
   }
+
+  await transporter.sendMail({
+    from: user,
+    to,
+    subject,
+    text,
+    html,
+  });
 }
+

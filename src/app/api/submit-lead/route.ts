@@ -15,11 +15,13 @@ export async function POST(request: Request) {
     const ipAddress = request.headers.get("x-forwarded-for") || request.headers.get("x-real-ip") || "Unknown IP";
     const submissionDate = new Date().toISOString();
 
-    // 1. Send Email via Microsoft Graph API
-    if (process.env.EMAIL_USER && process.env.AZURE_CLIENT_ID) {
+    // 1. Send Email Notification via Gmail / Nodemailer
+    const mailUser = process.env.GMAIL_USER || process.env.EMAIL_USER;
+    const mailPass = process.env.GMAIL_APP_PASSWORD || process.env.EMAIL_PASS || process.env.GMAIL_CLIENT_ID;
+    if (mailUser && mailPass) {
       try {
         await sendEmail({
-          to: process.env.EMAIL_TO || process.env.EMAIL_USER,
+          to: process.env.EMAIL_TO || mailUser,
           subject: `New Lead for ${serviceId}: ${firstName} ${lastName}`,
           html: `
             <h2>New Lead Submission</h2>
