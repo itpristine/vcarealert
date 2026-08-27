@@ -15,13 +15,11 @@ export async function POST(request: Request) {
     const ipAddress = request.headers.get("x-forwarded-for") || request.headers.get("x-real-ip") || "Unknown IP";
     const submissionDate = new Date().toISOString();
 
-    // 1. Send Email Notification via Gmail / Nodemailer
-    const mailUser = process.env.GMAIL_USER || process.env.EMAIL_USER;
-    const mailPass = process.env.GMAIL_APP_PASSWORD || process.env.EMAIL_PASS || process.env.GMAIL_CLIENT_ID;
-    if (mailUser && mailPass) {
+    // 1. Send Email Notification via Resend
+    if (process.env.RESEND_API_KEY) {
       try {
         await sendEmail({
-          to: process.env.EMAIL_TO || mailUser,
+          to: process.env.EMAIL_TO || "onboarding@resend.dev",
           subject: `New Lead for ${serviceId}: ${firstName} ${lastName}`,
           html: `
             <h2>New Lead Submission</h2>

@@ -80,13 +80,11 @@ export async function POST(req: Request) {
       }
     }
 
-    // 1. Send Email Notification via Gmail / Nodemailer
-    const mailUser = process.env.GMAIL_USER || process.env.EMAIL_USER;
-    const mailPass = process.env.GMAIL_APP_PASSWORD || process.env.EMAIL_PASS || process.env.GMAIL_CLIENT_ID;
-    if (mailUser && mailPass) {
+    // 1. Send Email Notification via Resend
+    if (process.env.RESEND_API_KEY) {
       try {
         await sendEmail({
-          to: process.env.EMAIL_TO || mailUser,
+          to: process.env.EMAIL_TO || "onboarding@resend.dev",
           subject: `New Lead: ${firstName} ${lastName} - ${device}`,
           text: `New Quote Request Received:
 

@@ -1,4 +1,4 @@
-import nodemailer from "nodemailer";
+import { Resend } from "resend";
 
 interface SendMailOptions {
   to: string;
@@ -8,52 +8,38 @@ interface SendMailOptions {
 }
 
 export async function sendEmail({ to, subject, text, html }: SendMailOptions) {
-  const user = process.env.GMAIL_USER || process.env.EMAIL_USER;
-  const pass = process.env.GMAIL_APP_PASSWORD || process.env.EMAIL_PASS;
-
-  const clientId = process.env.GMAIL_CLIENT_ID;
-  const clientSecret = process.env.GMAIL_CLIENT_SECRET;
-  const refreshToken = process.env.GMAIL_REFRESH_TOKEN;
-
-  if (!user) {
-    throw new Error("GMAIL_USER (or EMAIL_USER) environment variable is not configured");
+  const apiKey = process.env.RESEND_API_KEY;
+  if (!apiKey) {
+    throw new Error("RESEND_API_KEY environment variable is not configured");
   }
 
-  let transporter: nodemailer.Transporter;
+  const resend = new Resend(apiKey);
+  const from = process.env.RESEND_FROM_EMAIL || process.env.EMAIL_FROM || "onboarding@resend.dev";
 
-  if (clientId && clientSecret && refreshToken) {
-    // Google OAuth2 Authentication
-    transporter = nodemailer.createTransport({
-      service: "gmail",
-      auth: {
-        type: "OAuth2",
-        user,
-        clientId,
-        clientSecret,
-        refreshToken,
-      },
-    });
-  } else if (pass) {
-    // Gmail App Password / SMTP Authentication
-    transporter = nodemailer.createTransport({
-      service: "gmail",
-      auth: {
-        user,
-        pass,
-      },
-    });
-  } else {
-    throw new Error(
-      "Missing Google authentication credentials. Please set GMAIL_APP_PASSWORD or Google OAuth2 variables (GMAIL_CLIENT_ID, GMAIL_CLIENT_SECRET, GMAIL_REFRESH_TOKEN) in your environment."
-    );
-  }
-
-  await transporter.sendMail({
-    from: user,
+  const payload: {
+    from: string;
+    to: string;
+    subject: string;
+    text?: string;
+    html?: string;
+  } = {
+    from,
     to,
     subject,
-    text,
-    html,
-  });
+  };
+
+  if (html) {
+    payload.html = html;
+  }
+  if (text) {
+    payload.text = text;
+  }
+
+  const { error } = await resend.emails.send(payload);
+
+  if (error) {
+    throw new Error(`Resend failed to send email: ${error.message}`);
+  }
 }
+
 
