@@ -16,30 +16,33 @@ export async function sendEmail({ to, subject, text, html }: SendMailOptions) {
   const resend = new Resend(apiKey);
   const from = process.env.RESEND_FROM_EMAIL || process.env.EMAIL_FROM || "onboarding@resend.dev";
 
-  const payload: {
-    from: string;
-    to: string;
-    subject: string;
-    text?: string;
-    html?: string;
-  } = {
-    from,
-    to,
-    subject,
-  };
+  let error;
 
   if (html) {
-    payload.html = html;
+    const res = await resend.emails.send({
+      from,
+      to,
+      subject,
+      html,
+      ...(text ? { text } : {}),
+    });
+    error = res.error;
+  } else if (text) {
+    const res = await resend.emails.send({
+      from,
+      to,
+      subject,
+      text,
+    });
+    error = res.error;
+  } else {
+    throw new Error("Neither html nor text body was provided for sendEmail");
   }
-  if (text) {
-    payload.text = text;
-  }
-
-  const { error } = await resend.emails.send(payload);
 
   if (error) {
     throw new Error(`Resend failed to send email: ${error.message}`);
   }
 }
+
 
 
