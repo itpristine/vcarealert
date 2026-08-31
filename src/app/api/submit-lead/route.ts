@@ -15,42 +15,38 @@ export async function POST(request: Request) {
     const ipAddress = request.headers.get("x-forwarded-for") || request.headers.get("x-real-ip") || "Unknown IP";
     const submissionDate = new Date().toISOString();
 
-    // 1. Send Email Notification via Resend
-    if (process.env.RESEND_API_KEY) {
-      try {
-        await sendEmail({
-          to: process.env.EMAIL_TO || "onboarding@resend.dev",
-          subject: `New Lead for ${serviceId}: ${firstName} ${lastName}`,
-          html: `
-            <h2>New Lead Submission</h2>
-            <h3>Personal Information</h3>
-            <ul>
-              <li><strong>Name:</strong> ${firstName} ${lastName}</li>
-              <li><strong>Age:</strong> ${age}</li>
-              <li><strong>Gender:</strong> ${gender}</li>
-              <li><strong>Phone:</strong> ${phoneNumber}</li>
-              <li><strong>Email:</strong> ${emailAddress}</li>
-            </ul>
-            <h3>Address</h3>
-            <p>${streetAddress}, ${city}, ${state} ${zipCode}</p>
-            <h3>Qualifying Questions</h3>
-            <ul>
-              <li><strong>Mobility Issues:</strong> ${mobilityIssues}</li>
-              <li><strong>Searching for Device:</strong> ${searchingForDevice}</li>
-            </ul>
-            <hr />
-            <p><strong>Service Requested:</strong> ${serviceId}</p>
-            <p><strong>Submission Date:</strong> ${submissionDate}</p>
-            <p><strong>Page URL:</strong> ${pageUrl}</p>
-            <p><strong>IP Address:</strong> ${ipAddress}</p>
-          `,
-        });
-        console.log("Email sent successfully");
-      } catch (emailError) {
-        console.error("Error sending email:", emailError);
-      }
-    } else {
-      console.warn("Email credentials not configured.");
+    // 1. Send Email Notification via Google Apps Script
+    try {
+      await sendEmail({
+        to: process.env.EMAIL_TO || "leads@vcarealert.com",
+        subject: `New Lead for ${serviceId}: ${firstName} ${lastName}`,
+        html: `
+          <h2>New Lead Submission</h2>
+          <h3>Personal Information</h3>
+          <ul>
+            <li><strong>Name:</strong> ${firstName} ${lastName}</li>
+            <li><strong>Age:</strong> ${age}</li>
+            <li><strong>Gender:</strong> ${gender}</li>
+            <li><strong>Phone:</strong> ${phoneNumber}</li>
+            <li><strong>Email:</strong> ${emailAddress}</li>
+          </ul>
+          <h3>Address</h3>
+          <p>${streetAddress}, ${city}, ${state} ${zipCode}</p>
+          <h3>Qualifying Questions</h3>
+          <ul>
+            <li><strong>Mobility Issues:</strong> ${mobilityIssues}</li>
+            <li><strong>Searching for Device:</strong> ${searchingForDevice}</li>
+          </ul>
+          <hr />
+          <p><strong>Service Requested:</strong> ${serviceId}</p>
+          <p><strong>Submission Date:</strong> ${submissionDate}</p>
+          <p><strong>Page URL:</strong> ${pageUrl}</p>
+          <p><strong>IP Address:</strong> ${ipAddress}</p>
+        `,
+      });
+      console.log("Email sent successfully via Google Apps Script");
+    } catch (emailError) {
+      console.error("Error sending email:", emailError);
     }
 
     // 2. Log to Google Sheets

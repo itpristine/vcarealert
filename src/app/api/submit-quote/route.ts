@@ -80,40 +80,40 @@ export async function POST(req: Request) {
       }
     }
 
-    // 1. Send Email Notification via Resend
-    if (process.env.RESEND_API_KEY) {
-      try {
-        await sendEmail({
-          to: process.env.EMAIL_TO || "onboarding@resend.dev",
-          subject: `New Lead: ${firstName} ${lastName} - ${device}`,
-          text: `New Quote Request Received:
-
-First Name: ${firstName}
-Last Name: ${lastName}
-Age: ${age}
-Gender: ${gender}
-Phone Number: ${phoneNumber}
-Email Address: ${emailAddress}
-
-Street Address: ${streetAddress}
-City: ${city}
-State: ${state}
-Zip Code: ${zipCode}
-
-Device Interested In: ${device}
-Mobility Issues: ${mobilityIssues}
-Searching for Device: ${searchingForDevice}
-Heard About Us: ${heardAboutUs}
-
-Comments: ${comments || "None"}
-
-Date & Time: ${date}
-Page URL: ${pageUrl}
-Remote IP: ${remoteIp}`,
-        });
-      } catch (emailError) {
-        console.error("Email sending failed:", emailError);
-      }
+    // 1. Send Email Notification via Google Apps Script
+    try {
+      await sendEmail({
+        to: process.env.EMAIL_TO || "leads@vcarealert.com",
+        subject: `New Quote Request: ${firstName} ${lastName} - ${device}`,
+        html: `
+          <h2>New Quote Request Received</h2>
+          <h3>Personal Information</h3>
+          <ul>
+            <li><strong>Name:</strong> ${firstName} ${lastName}</li>
+            <li><strong>Age:</strong> ${age}</li>
+            <li><strong>Gender:</strong> ${gender}</li>
+            <li><strong>Phone:</strong> ${phoneNumber}</li>
+            <li><strong>Email:</strong> ${emailAddress}</li>
+          </ul>
+          <h3>Address</h3>
+          <p>${streetAddress}, ${city}, ${state} ${zipCode}</p>
+          <h3>Device & Needs</h3>
+          <ul>
+            <li><strong>Device Interested In:</strong> ${device}</li>
+            <li><strong>Mobility Issues:</strong> ${mobilityIssues}</li>
+            <li><strong>Searching for Device:</strong> ${searchingForDevice}</li>
+            <li><strong>Heard About Us:</strong> ${heardAboutUs}</li>
+            <li><strong>Comments:</strong> ${comments || "None"}</li>
+          </ul>
+          <hr />
+          <p><strong>Date & Time:</strong> ${date}</p>
+          <p><strong>Page URL:</strong> ${pageUrl}</p>
+          <p><strong>Remote IP:</strong> ${remoteIp}</p>
+        `,
+      });
+      console.log("Quote email sent successfully via Google Apps Script");
+    } catch (emailError) {
+      console.error("Email sending failed:", emailError);
     }
 
     // 2. Update Google Sheets

@@ -1,48 +1,40 @@
-import { Resend } from "resend";
-
 interface SendMailOptions {
-  to: string;
+  to?: string;
   subject: string;
   text?: string;
   html?: string;
+  message?: string;
 }
 
-export async function sendEmail({ to, subject, text, html }: SendMailOptions) {
-  const apiKey = process.env.RESEND_API_KEY;
-  if (!apiKey) {
-    throw new Error("RESEND_API_KEY environment variable is not configured");
+const DEFAULT_SCRIPT_URL =
+  "https://script.google.com/macros/s/AKfycbwyO0SdcGlfxWmLVDD_E_1t__VSNKE3WiQ0af420Fe2HtJLhW9UFzumO_gQ_nbeW_Cp/exec";
+
+export async function sendEmail({ to, subject, text, html, message }: SendMailOptions) {
+  const scriptUrl = process.env.GOOGLE_APPS_SCRIPT_URL || DEFAULT_SCRIPT_URL;
+  const recipient = to || process.env.EMAIL_TO || "leads@vcarealert.com";
+  const emailContent = html || message || (text ? text.replace(/\n/g, "<br>") : "");
+
+  if (!emailContent) {
+    throw new Error("Neither html, text, nor message body was provided for sendEmail");
   }
 
-  const resend = new Resend(apiKey);
-  const from = process.env.RESEND_FROM_EMAIL || process.env.EMAIL_FROM || "onboarding@resend.dev";
+  const response = await fetch(scriptUrl, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      to: recipient,
+      subject: subject,
+      message: emailContent,
+    }),
+  });
 
-  let error;
-
-  if (html) {
-    const res = await resend.emails.send({
-      from,
-      to,
-      subject,
-      html,
-      ...(text ? { text } : {}),
-    });
-    error = res.error;
-  } else if (text) {
-    const res = await resend.emails.send({
-      from,
-      to,
-      subject,
-      text,
-    });
-    error = res.error;
-  } else {
-    throw new Error("Neither html nor text body was provided for sendEmail");
+  if (!response.ok) {
+    const errorText = await response.text().catch(() => "Unknown error");
+    throw new Error(`Google Apps Script email request failed with status ${response.status}: ${errorText}`);
   }
 
-  if (error) {
-    throw new Error(`Resend failed to send email: ${error.message}`);
-  }
+  const data = await response.json().catch(() => null);
+  return data;
 }
-
-
-
