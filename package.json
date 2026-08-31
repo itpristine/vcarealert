@@ -14,18 +14,15 @@
     "googleapis": "^171.4.0",
     "lucide-react": "^1.11.0",
     "next": "16.2.4",
-    "nodemailer": "^8.0.6",
     "react": "19.2.4",
     "react-dom": "19.2.4",
     "react-google-recaptcha": "^3.1.0",
     "react-hook-form": "^7.74.0",
-    "resend": "^6.24.0",
     "zod": "^4.3.6"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
-    "@types/nodemailer": "^8.0.0",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@types/react-google-recaptcha": "^2.1.9",
@@ -33,5 +30,9 @@
     "eslint-config-next": "16.2.4",
     "tailwindcss": "^4",
     "typescript": "^5"
+  },
+  "allowScripts": {
+    "sharp": true,
+    "unrs-resolver": true
   }
 }
