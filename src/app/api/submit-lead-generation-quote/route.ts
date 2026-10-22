@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { sendEmail } from "@/lib/email";
+import { usStates } from "@/lib/quote-validation";
 
 const leadTypes = [
   "VCare Alert",
@@ -21,7 +22,12 @@ const requestSchema = z.object({
   phone: z.string().trim().min(7).max(30),
   leadType: z.enum(leadTypes),
   otherIndustry: z.string().trim().max(120).optional(),
-  targetLocation: z.string().trim().min(2).max(200),
+  targetLocation: z.array(
+    z.string().refine((code) => usStates.some((state) => state.code === code))
+  ).min(1, "Select at least one target state.").max(usStates.length).refine(
+    (states) => new Set(states).size === states.length,
+    "Remove duplicate target states."
+  ),
   leadCount: z.coerce.number().int().min(1).max(10_000_000),
   requirements: z.string().trim().max(2000).optional(),
   recaptchaToken: z.string().optional(),
@@ -140,7 +146,9 @@ export async function POST(req: Request) {
     ["Email", data.email],
     ["Phone", data.phone],
     ["Type of leads", leadType],
-    ["Target location", data.targetLocation],
+    ["Target states", data.targetLocation
+      .map((code) => usStates.find((state) => state.code === code)?.name ?? code)
+      .join(", ")],
     ["Number of leads", String(data.leadCount)],
     ["Additional requirements", data.requirements || "None provided"],
     ["Date & time", new Date().toLocaleString("en-US", { timeZone: "America/New_York" })],

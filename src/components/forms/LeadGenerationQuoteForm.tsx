@@ -4,6 +4,7 @@ import { FormEvent, useRef, useState } from "react";
 import Link from "next/link";
 import ReCAPTCHA from "react-google-recaptcha";
 import { CheckCircle2, Loader2 } from "lucide-react";
+import MultiSelectStates from "@/components/forms/MultiSelectStates";
 
 const recaptchaSiteKey = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY;
 const leadTypes = [
@@ -27,6 +28,8 @@ export default function LeadGenerationQuoteForm() {
   const [errorMsg, setErrorMsg] = useState("");
   const [captchaToken, setCaptchaToken] = useState("");
   const [leadType, setLeadType] = useState("");
+  const [targetStates, setTargetStates] = useState<string[]>([]);
+  const [locationError, setLocationError] = useState("");
   const recaptchaRef = useRef<ReCAPTCHA | null>(null);
 
   const resetCaptcha = () => {
@@ -36,13 +39,20 @@ export default function LeadGenerationQuoteForm() {
 
   const onSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    if (targetStates.length === 0) {
+      setLocationError("Select at least one target state.");
+      return;
+    }
     if (recaptchaSiteKey && !captchaToken) {
       setErrorMsg("Please complete the reCAPTCHA before submitting.");
       return;
     }
 
     const formData = new FormData(event.currentTarget);
-    const requestData = Object.fromEntries(formData.entries());
+    const requestData = {
+      ...Object.fromEntries(formData.entries()),
+      targetLocation: targetStates,
+    };
     setIsSubmitting(true);
     setErrorMsg("");
 
@@ -172,10 +182,18 @@ export default function LeadGenerationQuoteForm() {
           </div>
         )}
         <div>
-          <label htmlFor="lead-location" className="block text-sm font-medium text-gray-700 mb-1">
-            Target Location
+          <label id="lead-location-label" className="block text-sm font-medium text-gray-700 mb-1">
+            Target States
           </label>
-          <input id="lead-location" name="targetLocation" required minLength={2} maxLength={200} placeholder="City, state, region, or country" className={fieldClassName} />
+          <MultiSelectStates
+            selectedStates={targetStates}
+            onChange={(states) => {
+              setTargetStates(states);
+              if (states.length > 0) setLocationError("");
+            }}
+            invalid={Boolean(locationError)}
+          />
+          {locationError && <p id="lead-location-error" role="alert" className="text-red-500 text-xs mt-1">{locationError}</p>}
         </div>
         <div>
           <label htmlFor="lead-count" className="block text-sm font-medium text-gray-700 mb-1">
