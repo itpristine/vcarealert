@@ -3,31 +3,16 @@
 import { useRef, useState } from "react";
 import { FieldPath, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
 import { motion, AnimatePresence } from "framer-motion";
 import { Loader2, CheckCircle2, ChevronRight, ChevronLeft } from "lucide-react";
 import Link from "next/link";
 import ReCAPTCHA from "react-google-recaptcha";
-
-const formSchema = z.object({
-  firstName: z.string().min(2, "First name is required"),
-  lastName: z.string().min(2, "Last name is required"),
-  age: z.string().min(1, "Age is required"),
-  gender: z.string().min(1, "Gender is required"),
-  phoneNumber: z.string().min(10, "Valid phone number is required"),
-  emailAddress: z.string().email("Valid email is required"),
-  streetAddress: z.string().min(5, "Street address is required"),
-  city: z.string().min(2, "City is required"),
-  state: z.string().min(2, "State is required"),
-  zipCode: z.string().min(5, "Zip code is required"),
-  device: z.string().min(1, "Device selection is required"),
-  mobilityIssues: z.string().min(1, "Please answer this question"),
-  searchingForDevice: z.string().min(1, "Please answer this question"),
-  heardAboutUs: z.string().min(1, "Please let us know how you heard about us"),
-  comments: z.string().optional(),
-});
-
-type FormData = z.infer<typeof formSchema>;
+import SearchableStateSelect from "@/components/forms/SearchableStateSelect";
+import {
+  quoteFormSchema,
+  sanitizeQuoteEmailInput,
+  type QuoteFormData,
+} from "@/lib/quote-validation";
 
 const recaptchaSiteKey = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY;
 
@@ -43,18 +28,25 @@ export default function QuoteForm({ initialDevice = "" }: { initialDevice?: stri
     register,
     handleSubmit,
     trigger,
+    setValue,
     watch,
     formState: { errors },
-  } = useForm<FormData>({
-    resolver: zodResolver(formSchema),
+  } = useForm<QuoteFormData>({
+    resolver: zodResolver(quoteFormSchema),
+    mode: "onTouched",
+    reValidateMode: "onChange",
     defaultValues: {
       device: initialDevice,
       comments: "",
     }
   });
+  const ageRegistration = register("age");
+  const phoneRegistration = register("phoneNumber");
+  const emailRegistration = register("emailAddress");
+  const stateRegistration = register("state");
 
   const handleNext = async () => {
-    let fieldsToValidate: FieldPath<FormData>[] = [];
+    let fieldsToValidate: FieldPath<QuoteFormData>[] = [];
     if (step === 1) {
       fieldsToValidate = ["firstName", "lastName", "age", "gender", "phoneNumber", "emailAddress"];
     } else if (step === 2) {
@@ -83,7 +75,7 @@ export default function QuoteForm({ initialDevice = "" }: { initialDevice?: stri
     recaptchaRef.current?.reset();
   };
 
-  const onSubmit = async (data: FormData) => {
+  const onSubmit = async (data: QuoteFormData) => {
     if (recaptchaSiteKey && !captchaToken) {
       setErrorMsg("Please complete the reCAPTCHA before submitting.");
       return;
@@ -164,44 +156,53 @@ export default function QuoteForm({ initialDevice = "" }: { initialDevice?: stri
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">First Name</label>
-                  <input {...register("firstName")} className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all" />
-                  {errors.firstName && <p className="text-red-500 text-xs mt-1">{errors.firstName.message as string}</p>}
+                  <input autoComplete="given-name" maxLength={80} aria-invalid={Boolean(errors.firstName)} aria-describedby={errors.firstName ? "quote-first-name-error" : undefined} {...register("firstName")} className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all" />
+                  {errors.firstName && <p id="quote-first-name-error" role="alert" className="text-red-500 text-xs mt-1">{errors.firstName.message}</p>}
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Last Name</label>
-                  <input {...register("lastName")} className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all" />
-                  {errors.lastName && <p className="text-red-500 text-xs mt-1">{errors.lastName.message as string}</p>}
+                  <input autoComplete="family-name" maxLength={80} aria-invalid={Boolean(errors.lastName)} aria-describedby={errors.lastName ? "quote-last-name-error" : undefined} {...register("lastName")} className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all" />
+                  {errors.lastName && <p id="quote-last-name-error" role="alert" className="text-red-500 text-xs mt-1">{errors.lastName.message}</p>}
                 </div>
               </div>
               
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Age</label>
-                  <input type="number" {...register("age")} className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all" />
-                  {errors.age && <p className="text-red-500 text-xs mt-1">{errors.age.message as string}</p>}
+                  <input type="text" inputMode="numeric" pattern="[0-9]*" maxLength={3} aria-invalid={Boolean(errors.age)} aria-describedby={errors.age ? "quote-age-error" : undefined} {...ageRegistration} onChange={(event) => {
+                    event.currentTarget.value = event.currentTarget.value.replace(/\D/g, "").slice(0, 3);
+                    void ageRegistration.onChange(event);
+                  }} className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all" />
+                  {errors.age && <p id="quote-age-error" role="alert" className="text-red-500 text-xs mt-1">{errors.age.message}</p>}
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Gender</label>
-                  <select {...register("gender")} className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all">
+                  <select aria-invalid={Boolean(errors.gender)} aria-describedby={errors.gender ? "quote-gender-error" : undefined} {...register("gender")} className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all">
                     <option value="">Select Gender</option>
                     <option value="Male">Male</option>
                     <option value="Female">Female</option>
                     <option value="Other">Other</option>
                   </select>
-                  {errors.gender && <p className="text-red-500 text-xs mt-1">{errors.gender.message as string}</p>}
+                  {errors.gender && <p id="quote-gender-error" role="alert" className="text-red-500 text-xs mt-1">{errors.gender.message}</p>}
                 </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                   <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
-                  <input type="tel" {...register("phoneNumber")} className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all" />
-                  {errors.phoneNumber && <p className="text-red-500 text-xs mt-1">{errors.phoneNumber.message as string}</p>}
+                  <input type="tel" autoComplete="tel" inputMode="numeric" maxLength={11} aria-invalid={Boolean(errors.phoneNumber)} aria-describedby={errors.phoneNumber ? "quote-phone-error" : undefined} {...phoneRegistration} onChange={(event) => {
+                    event.currentTarget.value = event.currentTarget.value.replace(/\D/g, "").slice(0, 11);
+                    void phoneRegistration.onChange(event);
+                  }} className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all" />
+                  {errors.phoneNumber && <p id="quote-phone-error" role="alert" className="text-red-500 text-xs mt-1">{errors.phoneNumber.message}</p>}
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
-                  <input type="email" {...register("emailAddress")} className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all" />
-                  {errors.emailAddress && <p className="text-red-500 text-xs mt-1">{errors.emailAddress.message as string}</p>}
+                  <input type="email" autoComplete="email" inputMode="email" maxLength={254} aria-invalid={Boolean(errors.emailAddress)} aria-describedby={errors.emailAddress ? "quote-email-error" : undefined} {...emailRegistration} onChange={(event) => {
+                    event.currentTarget.value = sanitizeQuoteEmailInput(event.currentTarget.value);
+                    void emailRegistration.onChange(event);
+                  }} className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all" />
+                  {errors.emailAddress && <p id="quote-email-error" role="alert" className="text-red-500 text-xs mt-1">{errors.emailAddress.message}</p>}
                 </div>
               </div>
             </motion.div>
@@ -220,34 +221,33 @@ export default function QuoteForm({ initialDevice = "" }: { initialDevice?: stri
               
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Street Address</label>
-                <input {...register("streetAddress")} className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all" />
-                {errors.streetAddress && <p className="text-red-500 text-xs mt-1">{errors.streetAddress.message as string}</p>}
+                <input autoComplete="street-address" maxLength={200} aria-invalid={Boolean(errors.streetAddress)} aria-describedby={errors.streetAddress ? "quote-address-error" : undefined} {...register("streetAddress")} className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all" />
+                {errors.streetAddress && <p id="quote-address-error" role="alert" className="text-red-500 text-xs mt-1">{errors.streetAddress.message}</p>}
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
                 <div className="col-span-1">
                   <label className="block text-sm font-medium text-gray-700 mb-1">City</label>
-                  <input {...register("city")} className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all" />
-                  {errors.city && <p className="text-red-500 text-xs mt-1">{errors.city.message as string}</p>}
+                  <input autoComplete="address-level2" maxLength={100} aria-invalid={Boolean(errors.city)} aria-describedby={errors.city ? "quote-city-error" : undefined} {...register("city")} className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all" />
+                  {errors.city && <p id="quote-city-error" role="alert" className="text-red-500 text-xs mt-1">{errors.city.message}</p>}
                 </div>
                 <div className="col-span-1">
                   <label className="block text-sm font-medium text-gray-700 mb-1">State</label>
-                  <select {...register("state")} className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all">
-                    <option value="">Select State</option>
-                    <option value="CA">California</option>
-                    <option value="TX">Texas</option>
-                    <option value="FL">Florida</option>
-                    <option value="NY">New York</option>
-                    <option value="IL">Illinois</option>
-                    <option value="PA">Pennsylvania</option>
-                    <option value="OTHER">Other</option>
-                  </select>
-                  {errors.state && <p className="text-red-500 text-xs mt-1">{errors.state.message as string}</p>}
+                  <SearchableStateSelect
+                    id="quote-state"
+                    value={watch("state")}
+                    onChange={(value) => setValue("state", value, { shouldValidate: Boolean(value), shouldDirty: true })}
+                    onBlur={() => setValue("state", watch("state") ?? "", { shouldValidate: true, shouldTouch: true })}
+                    inputRef={stateRegistration.ref}
+                    invalid={Boolean(errors.state)}
+                    describedBy={errors.state ? "quote-state-error" : undefined}
+                  />
+                  {errors.state && <p id="quote-state-error" role="alert" className="text-red-500 text-xs mt-1">{errors.state.message}</p>}
                 </div>
                 <div className="col-span-1">
                   <label className="block text-sm font-medium text-gray-700 mb-1">Zip Code</label>
-                  <input {...register("zipCode")} className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all" />
-                  {errors.zipCode && <p className="text-red-500 text-xs mt-1">{errors.zipCode.message as string}</p>}
+                  <input autoComplete="postal-code" inputMode="numeric" maxLength={10} aria-invalid={Boolean(errors.zipCode)} aria-describedby={errors.zipCode ? "quote-zip-error" : undefined} {...register("zipCode")} className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all" />
+                  {errors.zipCode && <p id="quote-zip-error" role="alert" className="text-red-500 text-xs mt-1">{errors.zipCode.message}</p>}
                 </div>
               </div>
             </motion.div>
@@ -265,16 +265,32 @@ export default function QuoteForm({ initialDevice = "" }: { initialDevice?: stri
               <h3 className="text-xl font-semibold text-gray-900 border-b border-gray-100 pb-2">Device & Preferences</h3>
               
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Which device are you interested in?</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">What are you interested in?</label>
                 <select {...register("device")} className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all">
-                  <option value="">Select a Device</option>
+                  <option value="">Select an option</option>
                   <option value="Home System">Home System</option>
                   <option value="Mobile System">Mobile System</option>
                   <option value="Smartwatch">Smartwatch</option>
+                  <option value="Business Leads">Business Leads</option>
                 </select>
                 {errors.device && <p className="text-red-500 text-xs mt-1">{errors.device.message as string}</p>}
               </div>
 
+              {watch("device") === "Business Leads" ? (
+                <div className="rounded-2xl border border-primary/20 bg-primary/5 p-6">
+                  <h4 className="text-lg font-semibold text-gray-900 mb-2">Looking for leads for your business?</h4>
+                  <p className="text-gray-600 mb-5">
+                    Use our dedicated form to tell us about your industry, target location, and the number of leads you need.
+                  </p>
+                  <Link
+                    href="/lead-generation#request-quote"
+                    className="inline-flex items-center justify-center px-6 py-3 bg-primary text-white font-medium rounded-xl hover:bg-blue-600 transition-colors"
+                  >
+                    Request a Lead Quote
+                  </Link>
+                </div>
+              ) : (
+                <>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-3">Do you have Mobility Issues?</label>
@@ -339,6 +355,8 @@ export default function QuoteForm({ initialDevice = "" }: { initialDevice?: stri
                   <p className="text-sm text-amber-600">reCAPTCHA is not configured for this environment.</p>
                 )}
               </div>
+                </>
+              )}
             </motion.div>
           )}
 
@@ -377,6 +395,13 @@ export default function QuoteForm({ initialDevice = "" }: { initialDevice?: stri
               >
                 <ChevronLeft className="w-4 h-4" /> Back
               </button>
+            ) : watch("device") === "Business Leads" ? (
+              <Link
+                href="/lead-generation#request-quote"
+                className="inline-flex items-center justify-center px-8 py-3 bg-primary text-white font-medium rounded-xl hover:bg-blue-600 transition-all shadow-md shadow-primary/20"
+              >
+                Continue to Lead Quote
+              </Link>
             ) : (
               <div></div>
             )}

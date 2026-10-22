@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { sendEmail } from "@/lib/email";
 import { appendQuoteRow } from "@/lib/sheets";
+import { quoteSubmissionSchema } from "@/lib/quote-validation";
 
 type RecaptchaVerificationResponse = {
   success: boolean;
@@ -37,14 +38,33 @@ async function verifyRecaptcha(token: string, remoteIp: string) {
 
 export async function POST(req: Request) {
   try {
-    const data = await req.json();
+    let payload: unknown;
+    try {
+      payload = await req.json();
+    } catch {
+      return NextResponse.json(
+        { success: false, error: "Please submit a valid request." },
+        { status: 400 }
+      );
+    }
+
+    const parsed = quoteSubmissionSchema.safeParse(payload);
+    if (!parsed.success) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: parsed.error.issues[0]?.message || "Please check the form and try again.",
+        },
+        { status: 400 }
+      );
+    }
 
     const {
       firstName, lastName, age, gender, phoneNumber, emailAddress,
       streetAddress, city, state, zipCode,
       device, mobilityIssues, searchingForDevice, heardAboutUs, comments, pageUrl,
       recaptchaToken
-    } = data;
+    } = parsed.data;
 
     const date = new Date().toLocaleString("en-US", { timeZone: "America/New_York" });
     const forwardedFor = req.headers.get("x-forwarded-for");
@@ -80,35 +100,50 @@ export async function POST(req: Request) {
       }
     }
 
+    const escapeHtml = (value: string) =>
+      value.replace(/[&<>"']/g, (character) => {
+        const entities: Record<string, string> = {
+          "&": "&amp;",
+          "<": "&lt;",
+          ">": "&gt;",
+          '"': "&quot;",
+          "'": "&#39;",
+        };
+        return entities[character];
+      });
+    const safeFirstName = escapeHtml(firstName);
+    const safeLastName = escapeHtml(lastName);
+    const safeDevice = escapeHtml(device);
+
     // 1. Send Email Notification via Google Apps Script
     try {
       await sendEmail({
         to: process.env.EMAIL_TO || "leads@vcarealert.com",
-        subject: `New Quote Request: ${firstName} ${lastName} - ${device}`,
+        subject: `New Quote Request: ${firstName} ${lastName} - ${device}`.replace(/[\r\n]/g, " "),
         html: `
           <h2>New Quote Request Received</h2>
           <h3>Personal Information</h3>
           <ul>
-            <li><strong>Name:</strong> ${firstName} ${lastName}</li>
-            <li><strong>Age:</strong> ${age}</li>
-            <li><strong>Gender:</strong> ${gender}</li>
-            <li><strong>Phone:</strong> ${phoneNumber}</li>
-            <li><strong>Email:</strong> ${emailAddress}</li>
+            <li><strong>Name:</strong> ${safeFirstName} ${safeLastName}</li>
+            <li><strong>Age:</strong> ${escapeHtml(age)}</li>
+            <li><strong>Gender:</strong> ${escapeHtml(gender)}</li>
+            <li><strong>Phone:</strong> ${escapeHtml(phoneNumber)}</li>
+            <li><strong>Email:</strong> ${escapeHtml(emailAddress)}</li>
           </ul>
           <h3>Address</h3>
-          <p>${streetAddress}, ${city}, ${state} ${zipCode}</p>
+          <p>${escapeHtml(streetAddress)}, ${escapeHtml(city)}, ${escapeHtml(state)} ${escapeHtml(zipCode)}</p>
           <h3>Device & Needs</h3>
           <ul>
-            <li><strong>Device Interested In:</strong> ${device}</li>
-            <li><strong>Mobility Issues:</strong> ${mobilityIssues}</li>
-            <li><strong>Searching for Device:</strong> ${searchingForDevice}</li>
-            <li><strong>Heard About Us:</strong> ${heardAboutUs}</li>
-            <li><strong>Comments:</strong> ${comments || "None"}</li>
+            <li><strong>Device Interested In:</strong> ${safeDevice}</li>
+            <li><strong>Mobility Issues:</strong> ${escapeHtml(mobilityIssues)}</li>
+            <li><strong>Searching for Device:</strong> ${escapeHtml(searchingForDevice)}</li>
+            <li><strong>Heard About Us:</strong> ${escapeHtml(heardAboutUs)}</li>
+            <li><strong>Comments:</strong> ${escapeHtml(comments || "None")}</li>
           </ul>
           <hr />
-          <p><strong>Date & Time:</strong> ${date}</p>
-          <p><strong>Page URL:</strong> ${pageUrl}</p>
-          <p><strong>Remote IP:</strong> ${remoteIp}</p>
+          <p><strong>Date & Time:</strong> ${escapeHtml(date)}</p>
+          <p><strong>Page URL:</strong> ${escapeHtml(pageUrl || "Not provided")}</p>
+          <p><strong>Remote IP:</strong> ${escapeHtml(remoteIp)}</p>
         `,
       });
       console.log("Quote email sent successfully via Google Apps Script");
@@ -122,7 +157,7 @@ export async function POST(req: Request) {
         await appendQuoteRow([
           date, firstName, lastName, age, gender, phoneNumber, emailAddress,
           streetAddress, city, state, zipCode, device, mobilityIssues,
-          searchingForDevice, heardAboutUs, comments || "", pageUrl, remoteIp,
+          searchingForDevice, heardAboutUs, comments || "", pageUrl || "", remoteIp,
         ]);
       } catch (sheetsError) {
         console.error("Google Sheets append failed:", sheetsError);
