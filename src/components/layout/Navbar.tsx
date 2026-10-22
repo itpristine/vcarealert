@@ -54,6 +54,9 @@ export default function Navbar() {
             <Link href="/#faqs" className="text-sm font-medium text-gray-600 hover:text-primary transition-colors">
               FAQs
             </Link>
+            <Link href="/lead-generation" className="text-sm font-medium text-gray-600 hover:text-primary transition-colors">
+              Lead Generation
+            </Link>
           </div>
 
           <div className="hidden md:flex items-center">
@@ -91,6 +94,9 @@ export default function Navbar() {
           </Link>
           <Link href="/#faqs" onClick={() => setIsMobileMenuOpen(false)} className="text-lg font-medium text-gray-900">
             FAQs
+          </Link>
+          <Link href="/lead-generation" onClick={() => setIsMobileMenuOpen(false)} className="text-lg font-medium text-gray-900">
+            Lead Generation
           </Link>
           <div className="pt-4 border-t border-gray-100">
             <Link 

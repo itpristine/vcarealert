@@ -5,6 +5,7 @@ import WhyChooseUs from "@/components/home/WhyChooseUs";
 import WhyWeExist from "@/components/home/WhyWeExist";
 import Stats from "@/components/home/Stats";
 import Faqs from "@/components/home/Faqs";
+import LeadGeneration from "@/components/home/LeadGeneration";
 
 const jsonLd = {
   "@context": "https://schema.org",
@@ -73,6 +74,7 @@ export default function Home() {
       <WhyWeExist />
       <Stats />
       <Faqs />
+      <LeadGeneration />
     </>
   );
 }
